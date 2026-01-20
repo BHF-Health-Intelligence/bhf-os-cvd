@@ -1,14 +1,8 @@
-from ehrql import create_dataset
-from ehrql.tables.tpp import patients, practice_registrations
+from ehrql import codelist_from_csv, show
+from ehrql.tables.core import patients, practice_registrations, clinical_events, medications
 
-dataset = create_dataset()
+index_date = "2024-03-31"
 
-index_date = "2020-03-31"
+diabetes_codes = codelist_from_csv("codelists/nhsd-primary-care-domain-refsets-dm_cod.csv", column="code")
 
-has_registration = practice_registrations.for_patient_on(
-    index_date
-).exists_for_patient()
-
-dataset.define_population(has_registration)
-
-dataset.sex = patients.sex
+show(clinical_events.where(clinical_events.snomedct_code.is_in(diabetes_codes)))
