@@ -1,8 +1,35 @@
-from ehrql import codelist_from_csv, show
+from ehrql import codelist_from_csv, create_dataset, show
 from ehrql.tables.core import patients, practice_registrations, clinical_events, medications
+from ehrql.tables.tpp import emergency_care_attendances
 
-index_date = "2024-03-31"
+# Instantiation
+dataset = create_dataset()
 
-diabetes_codes = codelist_from_csv("codelists/nhsd-primary-care-domain-refsets-dm_cod.csv", column="code")
+dataset.configure_dummy_data(population_size=1000)
 
-show(clinical_events.where(clinical_events.snomedct_code.is_in(diabetes_codes)))
+#CVD codes of-interest
+cvd_codes = codelist_from_csv("codelists/cvd-ae-cod.csv", column="code")
+
+#Known sex:
+is_female_or_male = patients.sex.is_in(["female", "male"])
+
+#Restrict events to those within date range
+date_start="2017-04-01"
+date_end = "2025-05-01"
+
+#Ages 
+age_at_start = patients.age_on(date_start)
+age_filter = (age_at_start >= 0) & (age_at_start <= 110)
+
+#Has diagnosis in codelist:
+codelist_filter=emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
+
+
+#Implement filters
+dataset.define_population(age_filter,
+                          is_female_or_male,
+                          )
+
+#Define columns
+dataset.age = age_at_start
+dataset.code = emergency_care_attendances[].diagnosis_01
