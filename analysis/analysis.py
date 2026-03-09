@@ -8,7 +8,7 @@ print("Starting analysis...")
 print("Current working directory:", os.getcwd())
 
 
-for item in os.listdir('output'):
+for item in os.listdir('analysis'):
     print(item)
 
 
