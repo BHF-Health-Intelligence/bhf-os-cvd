@@ -7,7 +7,7 @@ actions:
       highly_sensitive:
         dataset: output/dataset.csv.gz
   
-  run_analysis:
+  analysis:
     run: python:v2 analysis/analysis.py
     outputs:
       highly_sensitive:
