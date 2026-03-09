@@ -8,8 +8,8 @@ print("Starting analysis...")
 print("Current working directory:", os.getcwd())
 
 
-# for item in os.listdir('output'):
-#     print(item)
+for item in os.listdir('output'):
+    print(item)
 
 
 
