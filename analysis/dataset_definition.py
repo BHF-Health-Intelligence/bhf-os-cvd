@@ -37,7 +37,6 @@ dataset.cvd_admission = emergency_care_attendances.where(
 ).exists_for_patient()
 
 
-
 #Implement filters
 dataset.define_population(age_filter & 
                           is_female_or_male )
