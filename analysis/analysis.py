@@ -13,10 +13,10 @@ for item in os.listdir('output'):
 
 
 
-Read input data
+# Read input data
 dataset_location=os.path.join("analysis","dataset.csv.gz") 
 df = pd.read_csv(dataset_location, compression='gzip')
 
 
-Save to output 
+# Save to output 
 df.head().to_csv(os.path.join("output", "analysis_results.csv"), index=False)
