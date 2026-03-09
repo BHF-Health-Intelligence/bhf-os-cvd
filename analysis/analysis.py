@@ -2,15 +2,12 @@ import pandas as pd
 import os 
 
 
-
 print("Starting analysis...")
-
 print("Current working directory:", os.getcwd())
 
 
 for item in os.listdir('analysis'):
     print(item)
-
 
 
 # # Read input data
