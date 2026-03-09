@@ -5,16 +5,16 @@ import os
 
 print("Starting analysis...")
 
-print("Current working directory:", os.getcwd())
+# print("Current working directory:", os.getcwd())
 
 
-for item in os.listdir('output'):
-    print(item)
+# for item in os.listdir('output'):
+#     print(item)
 
 
 
 #Read input data
-dataset_location=os.path.join("output","dataset.csv.gz") 
+dataset_location=os.path.join("analysis","dataset.csv.gz") 
 df = pd.read_csv(dataset_location, compression='gzip')
 
 
