@@ -14,9 +14,9 @@ print("Current working directory:", os.getcwd())
 
 
 #Read input data
-dataset_location=os.path.join("analysis","dataset.csv.gz") 
-df = pd.read_csv(dataset_location, compression='gzip')
+# dataset_location=os.path.join("analysis","dataset.csv.gz") 
+# df = pd.read_csv(dataset_location, compression='gzip')
 
 
 #Save to output 
-df.head().to_csv(os.path.join("output", "analysis_results.csv"), index=False)
+# df.head().to_csv(os.path.join("output", "analysis_results.csv"), index=False)
