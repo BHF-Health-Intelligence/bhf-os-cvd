@@ -1,14 +1,15 @@
-version: '4.0'
+version: '5.0'
 
 actions:
   generate_dataset:
-    run: ehrql:v1 generate-dataset analysis/dataset_definition.py --output dummy_tables/dataset.csv.gz
+    run: ehrql:v1 generate-dataset analysis/dataset_definition.py --output output/dataset.csv.gz
     outputs:
       highly_sensitive:
-        dataset: dummy_tables/dataset.csv.gz
+        dataset: output/dataset.csv.gz
   
   analysis:
     run: python:v2 analysis/analysis.py
+    needs: [generate_dataset]
     outputs:
       highly_sensitive:
         analysis: output/analysis_results.csv
