@@ -10,8 +10,8 @@ for item in os.listdir('output'):
     print(item)
 
 
-# Read input data
-dataset_location=os.path.join("analysis","dataset.csv.gz") 
+# Read input data from generate_dataset
+dataset_location=os.path.join("output","dataset.csv.gz") 
 df = pd.read_csv(dataset_location, compression='gzip')
 
 

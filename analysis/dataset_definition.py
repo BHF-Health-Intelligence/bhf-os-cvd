@@ -10,6 +10,7 @@ from ehrql.tables.tpp import emergency_care_attendances, addresses
 # Instantiation
 dataset = create_dataset()
 
+#Set pop size for dummy data
 dataset.configure_dummy_data(population_size=1000)
 
 #CVD codes of-interest
