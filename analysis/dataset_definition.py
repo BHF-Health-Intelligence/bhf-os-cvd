@@ -1,6 +1,6 @@
-from ehrql import codelist_from_csv, create_dataset, show
+from ehrql import case, codelist_from_csv, create_dataset, show
 from ehrql.tables.core import patients
-from ehrql.tables.tpp import emergency_care_attendances, addresses
+from ehrql.tables.tpp import emergency_care_attendances, addresses, practice_registrations, when
 
 
 #For reference on emergency_care (ECDS):
@@ -9,18 +9,20 @@ from ehrql.tables.tpp import emergency_care_attendances, addresses
 
 
 # Define study dates 
-date_start="2017-04-01"
-date_end = "2025-05-01"
+study_date_start="2017-04-01"
+study_date_end = "2025-05-01"
 
 
 # Instantiation
 dataset = create_dataset()
-
 #Set pop size for dummy data
 dataset.configure_dummy_data(population_size=1000)
 
+#### Codelists ####
+
 #CVD codes of-interest
 cvd_codes = codelist_from_csv("codelists/cvd-ae-cod.csv", column="code")
+
 
 #### Dataset definitions ####
 
@@ -28,11 +30,48 @@ cvd_codes = codelist_from_csv("codelists/cvd-ae-cod.csv", column="code")
 is_female_or_male = patients.sex.is_in(["female", "male"])
 
 # Ages 
-age_at_start = patients.age_on(date_start)
+age_at_start = patients.age_on(study_date_start)
 age_filter = (age_at_start >= 0) & (age_at_start <= 110)
 
 #Has primary diagnosis in codelist:
 codelist_filter=emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
+
+#Has an IMD score 
+has_deprivation_index = addresses.for_patient_on(
+    study_date_start
+).imd_rounded.is_not_null()
+
+
+#Has a region
+has_region = practice_registrations.for_patient_on(
+    study_date_start
+).practice_nuts1_region_name.is_not_null()
+
+
+
+# Depravation
+imd_rounded = addresses.for_patient_on(study_date_start).imd_rounded
+max_imd = 32844
+imd_quintile = case(
+    when((imd_rounded >= 0) & (imd_rounded <= int(max_imd * 1 / 5))).then(1),
+    when(imd_rounded <= int(max_imd * 2 / 5)).then(2),
+    when(imd_rounded <= int(max_imd * 3 / 5)).then(3),
+    when(imd_rounded <= int(max_imd * 4 / 5)).then(4),
+    when(imd_rounded <= max_imd).then(5),
+    otherwise=99,
+)
+
+
+
+
+# Ethnicity #Does this work?
+# dataset.ethnicity = (
+#     clinical_events.where(clinical_events.snomedct_code.is_in(ethnicity))
+#     .where(clinical_events.date.is_on_or_before(study_start_date))
+#     .sort_by(clinical_events.date)
+#     .last_for_patient()
+#     .snomedct_code.to_category(ethnicity)
+# )
 
 
 
@@ -40,13 +79,13 @@ codelist_filter=emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
 #Implement filters
 dataset.define_population(age_filter & 
                           is_female_or_male & 
-                          age_filter)
+                          has_deprivation_index & 
+                          has_region)
 
 #Define columns
 dataset.age = age_at_start
 # dataset.code = emergency_care_attendances.diagnosis_01
-dataset.imd = addresses.for_patient_on(date_start).imd_rounded
-
+dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 
 
 
@@ -54,5 +93,5 @@ dataset.imd = addresses.for_patient_on(date_start).imd_rounded
 # dataset.cvd_admission = emergency_care_attendances.where(
 #                         emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
 #                         ).where(
-#                         emergency_care_attendances.arrival_date.is_on_or_between(date_start, date_end)
+#                         emergency_care_attendances.arrival_date.is_on_or_between(study_date_start, study_date_end)
 #                         ).exists_for_patient()
