@@ -46,14 +46,11 @@ dataset.define_population(age_filter &
 dataset.age = age_at_start
 dataset.code = emergency_care_attendances.diagnosis_01
 dataset.imd = addresses.for_patient_on(date_start).imd_rounded
+
+
+
+
 # dataset.ethnicity=emergency_care_attendances.ethnicity_from_sus
-
-
-
-
-
-
-
 # dataset.cvd_admission = emergency_care_attendances.where(
 #                         emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
 #                         ).where(
