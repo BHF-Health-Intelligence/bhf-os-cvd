@@ -44,7 +44,7 @@ dataset.define_population(age_filter &
 
 #Define columns
 dataset.age = age_at_start
-dataset.code = emergency_care_attendances.diagnosis_01
+# dataset.code = emergency_care_attendances.diagnosis_01
 dataset.imd = addresses.for_patient_on(date_start).imd_rounded
 
 
