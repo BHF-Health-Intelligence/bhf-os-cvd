@@ -86,7 +86,7 @@ dataset.define_population(age_filter &
 dataset.age = age_at_start
 # dataset.code = emergency_care_attendances.diagnosis_01
 dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
-
+dataset.imd_rounded=imd_rounded
 
 
 # dataset.ethnicity=emergency_care_attendances.ethnicity_from_sus
