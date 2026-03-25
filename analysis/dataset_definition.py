@@ -76,4 +76,4 @@ dataset.age = age_at_start
 dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 dataset.imd_quintile=imd_quintile
 dataset.ethnicity=ethnicity_from_sus.code
-dataset.arrival_date=emergency_care_attendances.arrival_date
+# dataset.arrival_date=emergency_care_attendances.arrival_date
