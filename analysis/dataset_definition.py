@@ -53,7 +53,6 @@ arrival_dates=emergency_care_attendances.arrival_date
 dates_within_study = (arrival_dates >= study_date_start) & (arrival_dates <= study_date_end)
 
 
-
 # Bin deprivation into quintiles
 imd_rounded = addresses.for_patient_on(study_date_start).imd_rounded
 max_imd = 32844
@@ -72,8 +71,7 @@ dataset.define_population(age_filter &
                           is_female_or_male & 
                           has_deprivation_index & 
                           has_region & 
-                          ethnicity & 
-                          dates_within_study)
+                          ethnicity)
 
 
 # Define columns
