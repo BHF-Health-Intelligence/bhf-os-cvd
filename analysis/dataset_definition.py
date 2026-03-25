@@ -46,7 +46,7 @@ has_region = practice_registrations.for_patient_on(
 ).practice_nuts1_region_name.is_not_null()
 
 # Has an ethnicity 
-ethnicity = ethnicity_from_sus.code[ethnicity_from_sus.code.is_not_null()]
+ethnicity = ethnicity_from_sus.code.is_not_null()
 
 
 # Bin deprivation into quintiles
@@ -75,5 +75,5 @@ dataset.age = age_at_start
 # dataset.diagnosis = emergency_care_attendances.diagnosis_01
 dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 dataset.imd_quintile=imd_quintile
-dataset.ethnicity=ethnicity
+dataset.ethnicity=ethnicity_from_sus.code
 dataset.arrival_date=emergency_care_attendances.arrival_date
