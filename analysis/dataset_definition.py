@@ -71,7 +71,7 @@ imd_quintile = case(
 
 
 #Ethnicity 
-ethnicity = ethnicity_from_sus.code
+ethnicity = ethnicity_from_sus.code.is_not_null()
 
 #Implement filters
 dataset.define_population(age_filter & 
