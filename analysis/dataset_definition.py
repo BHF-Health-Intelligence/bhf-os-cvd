@@ -1,6 +1,6 @@
 from ehrql import case, codelist_from_csv, create_dataset, show
 from ehrql.tables.core import patients
-from ehrql.tables.tpp import emergency_care_attendances, addresses, practice_registrations, when
+from ehrql.tables.tpp import emergency_care_attendances, addresses, practice_registrations, when, ethnicity_from_sus
 
 
 #For reference on emergency_care (ECDS):
@@ -48,8 +48,7 @@ has_region = practice_registrations.for_patient_on(
 ).practice_nuts1_region_name.is_not_null()
 
 
-
-# Depravation
+# Depravation + quintile
 imd_rounded = addresses.for_patient_on(study_date_start).imd_rounded
 max_imd = 32844
 imd_quintile = case(
@@ -64,17 +63,15 @@ imd_quintile = case(
 
 
 
-# Ethnicity #Does this work?
-# dataset.ethnicity = (
-#     clinical_events.where(clinical_events.snomedct_code.is_in(ethnicity))
-#     .where(clinical_events.date.is_on_or_before(study_start_date))
-#     .sort_by(clinical_events.date)
-#     .last_for_patient()
-#     .snomedct_code.to_category(ethnicity)
+# ethnicity_codes = codelist_from_csv(
+#     "codelists/opensafely-ethnicity-snomed-0removed.csv",
+#     column="code",
+#     category_column="Grouping_6",
 # )
 
 
-
+#Ethnicity 
+ethnicity = ethnicity_from_sus.code
 
 #Implement filters
 dataset.define_population(age_filter & 
@@ -87,7 +84,7 @@ dataset.age = age_at_start
 # dataset.code = emergency_care_attendances.diagnosis_01
 dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 dataset.imd_quintile=imd_quintile
-
+dataset.ethnicity=ethnicity
 
 # dataset.ethnicity=emergency_care_attendances.ethnicity_from_sus
 # dataset.cvd_admission = emergency_care_attendances.where(
