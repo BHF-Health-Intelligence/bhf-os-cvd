@@ -46,7 +46,9 @@ has_region = practice_registrations.for_patient_on(
 ).practice_nuts1_region_name.is_not_null()
 
 # Has an ethnicity 
-ethnicity = ethnicity_from_sus.code.is_not_null()
+ethnicity = ethnicity_from_sus.for_patient_on(
+    study_date_start
+).code.is_not_null()
 
 
 # Bin deprivation into quintiles
