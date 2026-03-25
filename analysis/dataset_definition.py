@@ -49,7 +49,8 @@ has_region = practice_registrations.for_patient_on(
 ethnicity = ethnicity_from_sus.code.is_not_null()
 
 #Arrival date in the study
-dates_within_study = (emergency_care_attendances.arrival_date >= study_date_start) & (emergency_care_attendances.arrival_date <= study_date_end)
+arrival_dates=emergency_care_attendances.arrival_date
+dates_within_study = (arrival_dates >= study_date_start) & (arrival_dates <= study_date_end)
 
 
 
@@ -81,4 +82,4 @@ dataset.age = age_at_start
 dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 dataset.imd_quintile=imd_quintile
 dataset.ethnicity=ethnicity_from_sus.code
-dataset.arrival_date=emergency_care_attendances.arrival_date
+dataset.arrival_date=arrival_dates
