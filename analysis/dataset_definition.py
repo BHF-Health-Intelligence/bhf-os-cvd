@@ -23,7 +23,6 @@ dataset.configure_dummy_data(population_size=1000)
 #CVD codes of-interest
 cvd_codes = codelist_from_csv("codelists/cvd-ae-cod.csv", column="code")
 
-
 #### Dataset definitions ####
 
 # Known sex
@@ -33,22 +32,24 @@ is_female_or_male = patients.sex.is_in(["female", "male"])
 age_at_start = patients.age_on(study_date_start)
 age_filter = (age_at_start >= 0) & (age_at_start <= 110)
 
-#Has primary diagnosis in codelist:
+# Has primary diagnosis in codelist:
 codelist_filter=emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
 
-#Has an IMD score 
+# Has an IMD score 
 has_deprivation_index = addresses.for_patient_on(
     study_date_start
 ).imd_rounded.is_not_null()
 
-
-#Has a region
+# Has a region
 has_region = practice_registrations.for_patient_on(
     study_date_start
 ).practice_nuts1_region_name.is_not_null()
 
+# Has an ethnicity 
+ethnicity = ethnicity_from_sus.code.is_not_null()
 
-# Depravation + quintile
+
+# Bin deprivation into quintiles
 imd_rounded = addresses.for_patient_on(study_date_start).imd_rounded
 max_imd = 32844
 imd_quintile = case(
@@ -61,34 +62,18 @@ imd_quintile = case(
 )
 
 
-
-
-# ethnicity_codes = codelist_from_csv(
-#     "codelists/opensafely-ethnicity-snomed-0removed.csv",
-#     column="code",
-#     category_column="Grouping_6",
-# )
-
-
-#Ethnicity 
-ethnicity = ethnicity_from_sus.code.is_not_null()
-
-#Implement filters
+# Implement filters
 dataset.define_population(age_filter & 
                           is_female_or_male & 
                           has_deprivation_index & 
-                          has_region)
+                          has_region & 
+                          ethnicity)
 
-#Define columns
+
+# Define columns
 dataset.age = age_at_start
-# dataset.code = emergency_care_attendances.diagnosis_01
+dataset.code = emergency_care_attendances.diagnosis_01
 dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 dataset.imd_quintile=imd_quintile
 dataset.ethnicity=ethnicity
-
-# dataset.ethnicity=emergency_care_attendances.ethnicity_from_sus
-# dataset.cvd_admission = emergency_care_attendances.where(
-#                         emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
-#                         ).where(
-#                         emergency_care_attendances.arrival_date.is_on_or_between(study_date_start, study_date_end)
-#                         ).exists_for_patient()
+dataset.arrival_date=emergency_care_attendances.arrival_date
