@@ -67,7 +67,8 @@ imd_quintile = case(
 
 
 # Implement filters
-dataset.define_population(age_filter & 
+dataset.define_population(codelist_filter & 
+                          age_filter & 
                           is_female_or_male & 
                           has_deprivation_index & 
                           has_region & 
