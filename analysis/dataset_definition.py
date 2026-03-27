@@ -80,7 +80,8 @@ dataset.define_population(age_filter &
                           is_female_or_male & 
                           has_deprivation_index & 
                           has_region & 
-                          ethnicity)
+                          ethnicity & 
+                          has_diagnosis)
 
 
 #TODO: implement codelist_filter and arrival_dates and diagnosis code 
