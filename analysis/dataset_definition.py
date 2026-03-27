@@ -58,7 +58,7 @@ first_attendance=emergency_care_attendances.where(
 ).sort_by(emergency_care_attendances.arrival_date).first_for_patient()
 
 
-has_diagnosis=first_attendance.for_patient_on(study_date_start).diagnosis_01.is_not_null()
+has_diagnosis=first_attendance.diagnosis_01.is_not_null()
 
 
 
