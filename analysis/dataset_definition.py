@@ -49,17 +49,13 @@ has_region = practice_registrations.for_patient_on(
 ethnicity = ethnicity_from_sus.code.is_not_null()
 
 #Arrival date in the study
-#arrival_dates=emergency_care_attendances.arrival_date
-#dates_within_study = (arrival_dates >= study_date_start) & (arrival_dates <= study_date_end)
-
-
 first_attendance=emergency_care_attendances.where(
     emergency_care_attendances.arrival_date.is_on_or_between(study_date_start, study_date_end)
 ).sort_by(emergency_care_attendances.arrival_date).first_for_patient()
 
 
+# Has a diagnosis code in the first attendance
 has_diagnosis=first_attendance.diagnosis_01.is_not_null()
-
 
 
 # Bin deprivation into quintiles
@@ -94,5 +90,5 @@ dataset.imd_quintile=imd_quintile
 dataset.ethnicity=ethnicity_from_sus.code
 # dataset.arrival_date=first_attendance.arrival_date
 dataset.primary_diag = first_attendance.diagnosis_01
-# dataset.arrival_date=arrival_dates
+dataset.arrival_date=first_attendance.arrival_date
 # dataset.diagnosis = emergency_care_attendances.diagnosis_01
