@@ -40,6 +40,8 @@ has_deprivation_index = addresses.for_patient_on(
     study_date_start
 ).imd_rounded.is_not_null()
 
+#TODO: leave missing IMDs in - same with ethnicity 
+
 # Has a region
 has_region = practice_registrations.for_patient_on(
     study_date_start
@@ -53,6 +55,7 @@ first_attendance=emergency_care_attendances.where(
     emergency_care_attendances.arrival_date.is_on_or_between(study_date_start, study_date_end)
 ).sort_by(emergency_care_attendances.arrival_date).first_for_patient()
 
+#TODO: remove the first for patient aspect - get all attendances 
 
 # Has a diagnosis code in the first attendance
 has_diagnosis=first_attendance.diagnosis_01.is_not_null()
@@ -78,9 +81,6 @@ dataset.define_population(age_filter &
                           has_region & 
                           ethnicity & 
                           has_diagnosis)
-
-
-#TODO: implement codelist_filter and arrival_dates and diagnosis code 
 
 
 # Define columns
