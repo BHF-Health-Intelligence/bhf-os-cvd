@@ -1,15 +1,15 @@
 version: '5.0'
 
 actions:
-  generate_dataset:
-    run: ehrql:v1 generate-dataset analysis/dataset_definition.py --output output/dataset.csv.gz
+  generate_composite_datasets:
+    run: ehrql:v1 python analysis/generate_composite.py
     outputs:
       highly_sensitive:
-        dataset: output/dataset.csv.gz
+        datasets: output/composite/*.csv.gz
   
   analysis:
     run: python:v2 analysis/analysis.py
-    needs: [generate_dataset]
+    needs: [generate_composite_datasets]
     outputs:
       highly_sensitive:
         analysis: output/analysis_results.csv

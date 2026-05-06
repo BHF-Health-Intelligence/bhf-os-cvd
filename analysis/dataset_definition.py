@@ -1,3 +1,5 @@
+import os
+
 from ehrql import case, codelist_from_csv, create_dataset, show
 from ehrql.tables.core import patients
 from ehrql.tables.tpp import emergency_care_attendances, addresses, practice_registrations, when, ethnicity_from_sus
@@ -8,12 +10,11 @@ from ehrql.tables.tpp import emergency_care_attendances, addresses, practice_reg
 
 
 
-# Define study dates 
-study_date_start="2017-04-01"
-study_date_end = "2025-05-01"
+# Define study dates (overridable for fortnightly extraction windows)
+study_date_start = os.environ.get("PERIOD_START", "2017-04-01")
+study_date_end = os.environ.get("PERIOD_END", "2025-05-01")
 
 
-# Instantiation
 dataset = create_dataset()
 #Set pop size for dummy data
 dataset.configure_dummy_data(population_size=1000)
@@ -36,29 +37,26 @@ age_filter = (age_at_start >= 0) & (age_at_start <= 110)
 codelist_filter=emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
 
 # Has an IMD score 
-has_deprivation_index = addresses.for_patient_on(
-    study_date_start
-).imd_rounded.is_not_null()
-
-#TODO: leave missing IMDs in - same with ethnicity 
+# has_deprivation_index = addresses.for_patient_on(
+#     study_date_start
+# ).imd_rounded.is_not_null()
 
 # Has a region
-has_region = practice_registrations.for_patient_on(
-    study_date_start
-).practice_nuts1_region_name.is_not_null()
+# has_region = practice_registrations.for_patient_on(
+#     study_date_start
+# ).practice_nuts1_region_name.is_not_null()
 
 # Has an ethnicity 
-ethnicity = ethnicity_from_sus.code.is_not_null()
+# ethnicity = ethnicity_from_sus.code.is_not_null()
 
-#Arrival date in the study
-first_attendance=emergency_care_attendances.where(
+#Attendances in the study period
+all_attendances=emergency_care_attendances.where(
     emergency_care_attendances.arrival_date.is_on_or_between(study_date_start, study_date_end)
-).sort_by(emergency_care_attendances.arrival_date).first_for_patient()
+)
 
-#TODO: remove the first for patient aspect - get all attendances 
 
-# Has a diagnosis code in the first attendance
-has_diagnosis=first_attendance.diagnosis_01.is_not_null()
+# Has a diagnosis code in any attendance
+has_diagnosis=all_attendances.where(all_attendances.diagnosis_01.is_not_null()).exists_for_patient()
 
 
 # Bin deprivation into quintiles
@@ -77,18 +75,45 @@ imd_quintile = case(
 # Implement filters
 dataset.define_population(age_filter & 
                           is_female_or_male & 
-                          has_deprivation_index & 
-                          has_region & 
-                          ethnicity & 
+                          #has_deprivation_index & 
+                          #has_region & 
+                          #ethnicity & 
                           has_diagnosis)
 
 
 # Define columns
-dataset.age = age_at_start
-dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
+dataset.age_at_start = age_at_start
+# dataset.imd = addresses.for_patient_on(study_date_start).imd_rounded
 dataset.imd_quintile=imd_quintile
-dataset.ethnicity=ethnicity_from_sus.code
+
+
+#Get human-readable ethnicity
+#dataset.ethnicity=ethnicity_from_sus.code
+dataset.ethnicity_group = ethnicity_from_sus.code.map_values(
+    {
+        # White
+        "A": "White", "B": "White", "C": "White",
+        # Mixed
+        "D": "Mixed", "E": "Mixed", "F": "Mixed", "G": "Mixed",
+        # Asian or Asian British
+        "H": "Asian", "J": "Asian", "K": "Asian", "L": "Asian",
+        # Black or Black British
+        "M": "Black", "N": "Black", "P": "Black",
+        # Other ethnic groups
+        "R": "Other", "S": "Other",
+        # Not stated
+        "Z": "Not stated",
+    },
+    default="Unknown",
+)
+
+
 # dataset.arrival_date=first_attendance.arrival_date
-dataset.primary_diag = first_attendance.diagnosis_01
-dataset.arrival_date=first_attendance.arrival_date
+
+
+dataset.primary_diag = all_attendances.sort_by(all_attendances.arrival_date).first_for_patient().diagnosis_01
+
+dataset.attendance_date=all_attendances.sort_by(all_attendances.arrival_date).first_for_patient().arrival_date
+#TODO: Arrival date doesn't ned to be defined when using measures
+# But we can add the count for the month 
 # dataset.diagnosis = emergency_care_attendances.diagnosis_01
