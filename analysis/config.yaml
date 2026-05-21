@@ -1,6 +1,6 @@
 study_date_start: "2020-01-01"
 study_date_end: "2020-06-01"
+window_width_weeks: 1
 codelist_path: "codelists/cvd-ae-cod.csv"
-dummy_population_size: 1000
-output_composite_dir: "output/composite"
+dummy_population_size: 10000
 definitions_dir: "analysis"

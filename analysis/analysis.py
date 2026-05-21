@@ -1,35 +1,64 @@
-import os
-from glob import glob
-
 import pandas as pd
 
 print("Starting analysis...")
-print("Current working directory:", os.getcwd())
 
-# Read all weekly outputs produced by the generate_dataset_week_N actions
-composite_pattern = os.path.join("output", "composite", "output_dataset_week_*.csv.gz")
-dataset_locations = sorted(
-    glob(composite_pattern),
-    key=lambda p: int(
-        os.path.basename(p)
-        .replace("output_dataset_week_", "")
-        .replace(".csv.gz", "")
-    ),
-)
+#Read in measures output file
+measures_path = "output/measures_attendances.csv.gz"
+df = pd.read_csv(measures_path)
 
-if not dataset_locations:
-    raise FileNotFoundError(
-        f"No composite datasets found matching: {composite_pattern}"
+#Get numerators and rename to attendances 
+if "numerator" not in df.columns:
+    raise ValueError(
+        "Expected measures output to contain a 'numerator' column for attendance counts"
     )
 
-print(f"Concatenating {len(dataset_locations)} weekly files...")
-dataframes = [pd.read_csv(path) for path in dataset_locations]
-df = pd.concat(dataframes, ignore_index=True)
+df = df.rename(columns={"numerator": "attendance_count"})
 
-if "attendance_date" in df.columns:
-    df["attendance_date"] = pd.to_datetime(df["attendance_date"], errors="coerce")
-    df = df.sort_values("attendance_date", kind="stable")
+#Drop denominator and ratio columns (don't need 'em)
+columns_to_drop = ["ratio", "denominator"]
+existing_drop_cols = [column for column in columns_to_drop if column in df.columns]
+if existing_drop_cols:
+    df = df.drop(columns=existing_drop_cols)
 
-output_path = os.path.join("output", "analysis_results.csv.gz")
+if "interval_start" in df.columns:
+    df["interval_start"] = pd.to_datetime(df["interval_start"], errors="coerce")
+if "interval_end" in df.columns:
+    df["interval_end"] = pd.to_datetime(df["interval_end"], errors="coerce")
+
+age_group_order = [
+    "0-4",
+    "5-11",
+    "12-17",
+    "18-25",
+    "26-34",
+    "35-49",
+    "50-69",
+    "70-79",
+    "80-89",
+    "90+",
+]
+if "age_group" in df.columns:
+    df["age_group"] = pd.Categorical(
+        df["age_group"], categories=age_group_order, ordered=True
+    )
+
+if "imd_quintile" in df.columns:
+    df["imd_quintile"] = pd.to_numeric(df["imd_quintile"], errors="coerce")
+
+sort_columns = []
+for column in [
+    "interval_start",
+    "interval_end",
+    "age_group",
+    "ethnicity_group",
+    "imd_quintile",
+]:
+    if column in df.columns:
+        sort_columns.append(column)
+
+if sort_columns:
+    df = df.sort_values(sort_columns, kind="stable")
+
+output_path = "output/analysis_results.csv.gz"
 df.to_csv(output_path, index=False)
-print(f"Saved {len(df)} rows to {output_path}")
+print(f"Saved {len(df)} grouped interval rows to {output_path}")
