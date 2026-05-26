@@ -8,8 +8,9 @@ actions:
         measures: output/measures_attendances.csv.gz
 
   analysis:
-    run: python:v2 analysis/analysis.py
+    run: python:v2 analysis/preprocess.py
     needs: [generate_measures]
     outputs:
       highly_sensitive:
-        analysis: output/analysis_results.csv.gz
+        analysis: output/preprocess_results.csv.gz 
+        analysis_summary: output/preprocess_summary.csv.gz

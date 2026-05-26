@@ -31,6 +31,9 @@ if "interval_start" in df.columns:
     sort_columns = ["interval_start","interval_end","imd_quintile","age_group"]
     df = df.sort_values(sort_columns, kind="stable")
 
-output_path = "output/analysis_results.csv.gz"
+output_path = "output/preprocess_results.csv.gz"
 df.to_csv(output_path, index=False)
 print(f"Saved {len(df)} grouped interval rows to {output_path}")
+
+output_path_summary = "output/preprocess_summary.csv.gz"
+df[df["attendance_flag"]!=0].head(20).to_csv(output_path_summary, index=False)
