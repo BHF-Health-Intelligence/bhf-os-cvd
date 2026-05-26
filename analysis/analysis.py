@@ -9,54 +9,26 @@ df = pd.read_csv(measures_path)
 #Get numerators and rename to attendances 
 if "numerator" not in df.columns:
     raise ValueError(
-        "Expected measures output to contain a 'numerator' column for attendance counts"
+        "Expected measures output to contain a 'numerator' column for attendance flag"
     )
 
-df = df.rename(columns={"numerator": "attendance_count"})
+df = df.rename(columns={"numerator": "attendance_flag"})
 
 #Drop denominator and ratio columns (don't need 'em)
-columns_to_drop = ["ratio", "denominator"]
-existing_drop_cols = [column for column in columns_to_drop if column in df.columns]
-if existing_drop_cols:
-    df = df.drop(columns=existing_drop_cols)
+# columns_to_drop = ["ratio", "denominator"]
+# existing_drop_cols = [column for column in columns_to_drop if column in df.columns]
+# if existing_drop_cols:
+#     df = df.drop(columns=existing_drop_cols)
 
+#Convert intervals to proper datetimes
 if "interval_start" in df.columns:
     df["interval_start"] = pd.to_datetime(df["interval_start"], errors="coerce")
 if "interval_end" in df.columns:
     df["interval_end"] = pd.to_datetime(df["interval_end"], errors="coerce")
 
-age_group_order = [
-    "0-4",
-    "5-11",
-    "12-17",
-    "18-25",
-    "26-34",
-    "35-49",
-    "50-69",
-    "70-79",
-    "80-89",
-    "90+",
-]
-if "age_group" in df.columns:
-    df["age_group"] = pd.Categorical(
-        df["age_group"], categories=age_group_order, ordered=True
-    )
-
-if "imd_quintile" in df.columns:
-    df["imd_quintile"] = pd.to_numeric(df["imd_quintile"], errors="coerce")
-
-sort_columns = []
-for column in [
-    "interval_start",
-    "interval_end",
-    "age_group",
-    "ethnicity_group",
-    "imd_quintile",
-]:
-    if column in df.columns:
-        sort_columns.append(column)
-
-if sort_columns:
+#Sort columns 
+if "interval_start" in df.columns:
+    sort_columns = ["interval_start","interval_end","imd_quintile","age_group"]
     df = df.sort_values(sort_columns, kind="stable")
 
 output_path = "output/analysis_results.csv.gz"

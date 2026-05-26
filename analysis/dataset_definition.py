@@ -17,12 +17,13 @@ def _load_config(path: Path) -> dict[str, str]:
         config[key.strip()] = value.strip().strip('"').strip("'")
     return config
 
-
+#Load config settings
 config = _load_config(Path(__file__).with_name("config.yaml"))
 study_date_start = date.fromisoformat(config["study_date_start"])
 study_date_end = date.fromisoformat(config["study_date_end"])
 window_width_weeks = int(config["window_width_weeks"])
 
+#Figure out starting points of weekly intervals from study dates 
 total_days = (study_date_end - study_date_start).days + 1
 total_week_count = (total_days + 6) // 7
 one_week_intervals = weeks(total_week_count).starting_on(study_date_start)
@@ -34,18 +35,20 @@ weekly_intervals = [
     )
 ]
 
+#Initialize measures
 measures = create_measures()
 measures.configure_dummy_data(population_size=int(config["dummy_population_size"]))
 
+#Read codelist
 cvd_codes = codelist_from_csv(config["codelist_path"], column="code")
 
-attendances_in_interval = emergency_care_attendances.where(
+#Get data for this interval and codelist
+cvd_attendances_in_interval = emergency_care_attendances.where(
     emergency_care_attendances.arrival_date.is_during(INTERVAL)
-)
-cvd_attendances_in_interval = attendances_in_interval.where(
-    attendances_in_interval.diagnosis_01.is_in(cvd_codes)
+    & emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
 )
 
+#Define columns and filters
 age_at_start = patients.age_on(INTERVAL.start_date)
 is_female_or_male = patients.sex.is_in(["female", "male"])
 age_filter = (age_at_start >= 0) & (age_at_start <= 110)
@@ -63,9 +66,11 @@ age_group = case(
     otherwise="Unknown",
 )
 
-has_cvd_attendance = cvd_attendances_in_interval.exists_for_patient()
+#Count attendances and convert to flag 
 attendance_count = cvd_attendances_in_interval.count_for_patient()
+attendance_flag = attendance_count > 0
 
+#Get IMDs
 imd_rounded = addresses.for_patient_on(INTERVAL.start_date).imd_rounded
 max_imd = 32844
 imd_quintile = case(
@@ -102,8 +107,8 @@ ethnicity_group = ethnicity_from_sus.code.map_values(
 
 measures.define_measure(
     name="cvd_attendances_weekly",
-    numerator=attendance_count,
-    denominator=has_cvd_attendance & age_filter & is_female_or_male,
+    numerator=attendance_flag,
+    denominator=age_filter & is_female_or_male,
     group_by={
         "age_group": age_group,
         "imd_quintile": imd_quintile,
