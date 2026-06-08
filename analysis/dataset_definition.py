@@ -35,17 +35,31 @@ weekly_intervals = [
     )
 ]
 
+#TODO:
+# Set rounding off 
+#Include a monthly option to use calendar months rather than 4 week periods 
+#Include the counts and the flag in the measures denominator / numerator 
+# denominator = number of attendances 
+# numerator = unique attenders 
+
+
 #Initialize measures
 measures = create_measures()
 measures.configure_dummy_data(population_size=int(config["dummy_population_size"]))
+
+
+
+
 
 #Read codelist
 cvd_codes = codelist_from_csv(config["codelist_path"], column="code")
 
 #Get data for this interval and codelist
-cvd_attendances_in_interval = emergency_care_attendances.where(
+attendances_in_interval = emergency_care_attendances.where(
     emergency_care_attendances.arrival_date.is_during(INTERVAL)
-    & emergency_care_attendances.diagnosis_01.is_in(cvd_codes)
+)
+cvd_attendances_in_interval = attendances_in_interval.where(
+    attendances_in_interval.diagnosis_01.is_in(cvd_codes)
 )
 
 #Define columns and filters
@@ -67,6 +81,7 @@ age_group = case(
 )
 
 #Count attendances and convert to flag 
+has_cvd_attendance = cvd_attendances_in_interval.exists_for_patient()
 attendance_count = cvd_attendances_in_interval.count_for_patient()
 attendance_flag = attendance_count > 0
 
@@ -105,13 +120,49 @@ ethnicity_group = ethnicity_from_sus.code.map_values(
     default="Unknown",
 )
 
+
+
+#TODO: fix this 
+measures.define_defaults(denominator = has_cvd_attendance & age_filter & is_female_or_male, 
+                             intervals=weekly_intervals)
+
+
 measures.define_measure(
     name="cvd_attendances_weekly",
     numerator=attendance_flag,
-    denominator=age_filter & is_female_or_male,
+    denominator=denominator,
     group_by={
         "age_group": age_group,
         "imd_quintile": imd_quintile,
+        "ethnicity_group": ethnicity_group,
+    },
+)
+
+measures.define_measure(
+    name="cvd_attendances_weekly_ages",
+    numerator=attendance_flag,
+    denominator=denominator,
+    group_by={
+        "age_group": age_group,
+    },
+    intervals=weekly_intervals,
+)
+
+measures.define_measure(
+    name="cvd_attendances_weekly_imd",
+    numerator=attendance_flag,
+    denominator=denominator,
+    group_by={
+        "imd_quintile": imd_quintile,
+    },
+    intervals=weekly_intervals,
+)
+
+measures.define_measure(
+    name="cvd_attendances_weekly_ethnicity",
+    numerator=attendance_flag,
+    denominator=denominator,
+    group_by={
         "ethnicity_group": ethnicity_group,
     },
     intervals=weekly_intervals,

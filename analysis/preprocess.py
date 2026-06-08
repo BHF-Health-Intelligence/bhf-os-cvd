@@ -35,5 +35,8 @@ output_path = "output/preprocess_results.csv.gz"
 df.to_csv(output_path, index=False)
 print(f"Saved {len(df)} grouped interval rows to {output_path}")
 
+#Create summary stats
 output_path_summary = "output/preprocess_summary.csv.gz"
-df[df["attendance_flag"]!=0].head(20).to_csv(output_path_summary, index=False)
+groups=["interval_start","age_group","imd_quintile","ethnicity_group"]
+df_summary = df.groupby(groups)["attendance_flag"].sum().reset_index()
+df_summary.to_csv(output_path_summary, index=False)
