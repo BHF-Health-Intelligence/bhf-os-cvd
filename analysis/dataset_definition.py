@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from ehrql import INTERVAL, case, codelist_from_csv, create_measures, weeks, when
+from ehrql import INTERVAL, case, codelist_from_csv, create_measures, months, when
 from ehrql.tables.core import patients
 from ehrql.tables.tpp import addresses, emergency_care_attendances, ethnicity_from_sus
 
@@ -21,19 +21,13 @@ def _load_config(path: Path) -> dict[str, str]:
 config = _load_config(Path(__file__).with_name("config.yaml"))
 study_date_start = date.fromisoformat(config["study_date_start"])
 study_date_end = date.fromisoformat(config["study_date_end"])
-window_width_weeks = int(config["window_width_weeks"])
 
-#Figure out starting points of weekly intervals from study dates 
-total_days = (study_date_end - study_date_start).days + 1
-total_week_count = (total_days + 6) // 7
-one_week_intervals = weeks(total_week_count).starting_on(study_date_start)
-weekly_intervals = [
-    (interval_group[0][0], interval_group[-1][1])
-    for interval_group in (
-        one_week_intervals[index : index + window_width_weeks]
-        for index in range(0, len(one_week_intervals), window_width_weeks)
-    )
-]
+#Calculate monthly intervals between study dates
+total_months = (
+    (study_date_end.year - study_date_start.year) * 12
+    + (study_date_end.month - study_date_start.month)
+)
+monthly_intervals = months(total_months).starting_on(study_date_start)
 
 #TODO:
 # Set rounding off 
@@ -46,9 +40,6 @@ weekly_intervals = [
 #Initialize measures
 measures = create_measures()
 measures.configure_dummy_data(population_size=int(config["dummy_population_size"]))
-
-
-
 
 
 #Read codelist
@@ -83,7 +74,7 @@ age_group = case(
 #Count attendances and convert to flag 
 has_cvd_attendance = cvd_attendances_in_interval.exists_for_patient()
 attendance_count = cvd_attendances_in_interval.count_for_patient()
-attendance_flag = attendance_count > 0
+# attendance_flag = attendance_count > 0
 
 #Get IMDs
 imd_rounded = addresses.for_patient_on(INTERVAL.start_date).imd_rounded
@@ -122,48 +113,38 @@ ethnicity_group = ethnicity_from_sus.code.map_values(
 
 
 
-#TODO: fix this 
-measures.define_defaults(denominator = has_cvd_attendance & age_filter & is_female_or_male, 
-                             intervals=weekly_intervals)
+# Denominator: total CVD attendance events for patients satisfying age and sex filters
+# Using an integer series causes ehrQL to sum counts across patients (total events)
+total_attendances = case(
+    when(age_filter & is_female_or_male).then(attendance_count),
+    otherwise=0,
+)
+
+#Or - slicker? 
+# total_attendances = attendance_count * (age_filter & is_female_or_male).as_int()
 
 
-measures.define_measure(
-    name="cvd_attendances_weekly",
-    numerator=attendance_flag,
-    denominator=denominator,
-    group_by={
-        "age_group": age_group,
-        "imd_quintile": imd_quintile,
-        "ethnicity_group": ethnicity_group,
-    },
+# Numerator: unique patients (not events) with a CVD attendance, satisfying the same filters
+# Boolean series causes ehrQL to count patients where True
+unique_attenders = has_cvd_attendance & age_filter & is_female_or_male
+
+measures.define_defaults(
+    denominator=total_attendances,
+    numerator=unique_attenders,
+    intervals=monthly_intervals,
 )
 
 measures.define_measure(
-    name="cvd_attendances_weekly_ages",
-    numerator=attendance_flag,
-    denominator=denominator,
-    group_by={
-        "age_group": age_group,
-    },
-    intervals=weekly_intervals,
+    name="cvd_attendances_monthly_ages",
+    group_by={"age_group": age_group},
 )
 
 measures.define_measure(
-    name="cvd_attendances_weekly_imd",
-    numerator=attendance_flag,
-    denominator=denominator,
-    group_by={
-        "imd_quintile": imd_quintile,
-    },
-    intervals=weekly_intervals,
+    name="cvd_attendances_monthly_imd",
+    group_by={"imd_quintile": imd_quintile},
 )
 
 measures.define_measure(
-    name="cvd_attendances_weekly_ethnicity",
-    numerator=attendance_flag,
-    denominator=denominator,
-    group_by={
-        "ethnicity_group": ethnicity_group,
-    },
-    intervals=weekly_intervals,
+    name="cvd_attendances_monthly_ethnicity",
+    group_by={"ethnicity_group": ethnicity_group},
 )
