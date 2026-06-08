@@ -6,13 +6,14 @@ print("Starting analysis...")
 measures_path = "output/measures_attendances.csv.gz"
 df = pd.read_csv(measures_path)
 
-#Get numerators and rename to attendances 
-if "numerator" not in df.columns:
-    raise ValueError(
-        "Expected measures output to contain a 'numerator' column for attendance flag"
-    )
+# #Get numerators and rename to attendances 
+# if "numerator" not in df.columns:
+#     raise ValueError(
+#         "Expected measures output to contain a 'numerator' column for attendance flag"
+#     )
 
-df = df.rename(columns={"numerator": "attendance_flag"})
+df = df.rename(columns={"numerator": "unique_attenders", 
+                        "denominator": "total_attendances"})
 
 #Drop denominator and ratio columns (don't need 'em)
 # columns_to_drop = ["ratio", "denominator"]
@@ -36,7 +37,7 @@ df.to_csv(output_path, index=False)
 print(f"Saved {len(df)} grouped interval rows to {output_path}")
 
 #Create summary stats
-output_path_summary = "output/preprocess_summary.csv.gz"
-groups=["interval_start","age_group","imd_quintile","ethnicity_group"]
-df_summary = df.groupby(groups)["attendance_flag"].sum().reset_index()
-df_summary.to_csv(output_path_summary, index=False)
+# output_path_summary = "output/preprocess_summary.csv.gz"
+# groups=["interval_start","age_group","imd_quintile","ethnicity_group"]
+# df_summary = df.groupby(groups)["unique_attenders"].sum().reset_index()
+# df_summary.to_csv(output_path_summary, index=False)
