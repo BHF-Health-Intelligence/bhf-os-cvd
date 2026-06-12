@@ -31,10 +31,6 @@ monthly_intervals = months(total_months).starting_on(study_date_start)
 
 #TODO:
 # Set rounding off 
-#Include a monthly option to use calendar months rather than 4 week periods 
-#Include the counts and the flag in the measures denominator / numerator 
-# denominator = number of attendances 
-# numerator = unique attenders 
 
 
 #Initialize measures
