@@ -1,4 +1,4 @@
-study_date_start: "2018-01-01"
-study_date_end: "2025-01-01"
+study_date_start: "2025-01-01"
+study_date_end: "2025-02-01"
 codelist_path: "codelists/cvd-ae-cod.csv"
 dummy_population_size: 10000

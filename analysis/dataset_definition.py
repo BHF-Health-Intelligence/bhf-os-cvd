@@ -1,6 +1,5 @@
 from datetime import date
 from pathlib import Path
-
 from ehrql import INTERVAL, case, codelist_from_csv, create_measures, months, when
 from ehrql.tables.core import patients
 from ehrql.tables.tpp import addresses, emergency_care_attendances, ethnicity_from_sus
