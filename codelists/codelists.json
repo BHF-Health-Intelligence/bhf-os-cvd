@@ -1,3 +1,10 @@
 {
-  "files": {}
+  "files": {
+    "user-DanOC-bhf-cvd.csv": {
+      "id": "user/DanOC/bhf-cvd/17e3f5ca",
+      "url": "https://www.opencodelists.org/codelist/user/DanOC/bhf-cvd/17e3f5ca/",
+      "downloaded_at": "2026-06-17 13:22:34.270848Z",
+      "sha": "c9a85cbf1f5952b37cd507fe99f7ea9524c9ae5f"
+    }
+  }
 }

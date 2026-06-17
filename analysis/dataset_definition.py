@@ -28,9 +28,6 @@ total_months = (
 )
 monthly_intervals = months(total_months).starting_on(study_date_start)
 
-#TODO:
-# Set rounding off 
-
 
 #Initialize measures
 measures = create_measures()
