@@ -2,8 +2,10 @@ import pandas as pd
 
 print("Starting analysis...")
 
-#Read in measures output file
+output_path = "output/preprocess_results.csv.gz"
 measures_path = "output/measures_attendances.csv.gz"
+
+#Read in measures output file
 df = pd.read_csv(measures_path)
 
 # #Get numerators and rename to attendances 
@@ -32,7 +34,6 @@ if "interval_start" in df.columns:
     sort_columns = ["interval_start","interval_end","imd_quintile","age_group"]
     df = df.sort_values(sort_columns, kind="stable")
 
-output_path = "output/preprocess_results.csv.gz"
 df.to_csv(output_path, index=False)
 print(f"Saved {len(df)} grouped interval rows to {output_path}")
 
