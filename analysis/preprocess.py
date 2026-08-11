@@ -2,7 +2,7 @@ import pandas as pd
 
 print("Starting analysis...")
 
-output_path = "output/preprocess_results.csv.gz"
+output_path = "output/preprocess_results.csv"
 measures_path = "output/measures_attendances.csv.gz"
 
 #Read in measures output file

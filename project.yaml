@@ -11,6 +11,6 @@ actions:
     run: python:v2 analysis/preprocess.py
     needs: [generate_measures]
     outputs:
-      highly_sensitive:
-        analysis: output/preprocess_results.csv.gz 
+      moderately_sensitive:
+        analysis: output/preprocess_results.csv
         #analysis_summary: output/preprocess_summary.csv.gz
