@@ -81,7 +81,6 @@ age_group = case(
     when((age_at_start >= 75) & (age_at_start <= 79)).then("75-79"),
     when((age_at_start >= 80) & (age_at_start <= 84)).then("80-84"),
     when((age_at_start >= 85) & (age_at_start <= 89)).then("85-89"),
-    when((age_at_start >= 85) & (age_at_start <= 89)).then("85-89"),
     when((age_at_start >= 90) & (age_at_start <= 94)).then("90-94"),
     when(age_at_start >= 95).then("95+"),
     otherwise="Unknown",
